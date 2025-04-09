@@ -747,7 +747,7 @@ impl Tensor {
         if self.elem_count() == 0 {
             return Ok(self.clone());
         }
-        let storage = self.storage().powf(self.layout(), e)?;
+        let storage = self.storage().powf32(self.layout(), e)?;
         let op = BackpropOp::new1(self, |t| Op::Powf32(t, e));
         Ok(from_storage(storage, self.shape(), op, false))
     }

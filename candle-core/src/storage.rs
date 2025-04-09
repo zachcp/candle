@@ -107,6 +107,23 @@ impl Storage {
         }
     }
 
+    pub(crate) fn powf32(&self, layout: &Layout, alpha: f32) -> Result<Self> {
+        match self {
+            Storage::Cpu(storage) => {
+                let storage = storage.powf32(layout, alpha)?;
+                Ok(Self::Cpu(storage))
+            }
+            Self::Cuda(storage) => {
+                let storage = storage.powf32(layout, alpha)?;
+                Ok(Self::Cuda(storage))
+            }
+            Self::Metal(storage) => {
+                let storage = storage.powf32(layout, alpha)?;
+                Ok(Self::Metal(storage))
+            }
+        }
+    }
+
     pub(crate) fn elu(&self, layout: &Layout, alpha: f64) -> Result<Self> {
         match self {
             Storage::Cpu(storage) => {
