@@ -722,6 +722,26 @@ impl Tensor {
         Ok(from_storage(storage, self.shape(), op, false))
     }
 
+    /// This operation multiplies the input tensor by `mul` then adds `add` and return the result.
+    /// The input values `mul` and `add` are casted to the appropriate type so some rounding might
+    /// be performed.
+    ///
+    /// ```rust
+    /// use candle_core::{Tensor, Device};
+    /// let a = Tensor::new(&[[0f32, 1.], [2., 3.]], &Device::Cpu)?;
+    /// let a = a.affine(4., -2.)?;
+    /// assert_eq!(a.to_vec2::<f32>()?, &[[-2.0, 2.0], [6.0, 10.0]]);
+    /// # Ok::<(), candle_core::Error>(())
+    /// ```
+    pub fn affine_f32(&self, mul: f32, add: f32) -> Result<Self> {
+        if self.elem_count() == 0 {
+            return Ok(self.clone());
+        }
+        let storage = self.storage().affine(self.layout(), mul, add)?;
+        let op = BackpropOp::new1(self, |arg| Op::Affine { arg, mul, add });
+        Ok(from_storage(storage, self.shape(), op, false))
+    }
+
     /// Applies the Exponential Linear Unit (ELU) function on each element of the input tensor.
     pub fn elu(&self, alpha: f64) -> Result<Self> {
         if self.elem_count() == 0 {
@@ -2679,6 +2699,23 @@ macro_rules! bin_trait {
                 self.affine($mul(rhs), $add(rhs))
             }
         }
+
+        // f32 implementations
+        impl std::ops::$trait<f32> for Tensor {
+            type Output = Result<Tensor>;
+
+            fn $fn1(self, rhs: f32) -> Self::Output {
+                self.affine_f32($mul(rhs), $add(rhs))
+            }
+        }
+
+        impl std::ops::$trait<f32> for &Tensor {
+            type Output = Result<Tensor>;
+
+            fn $fn1(self, rhs: f32) -> Self::Output {
+                self.affine_f32($mul(rhs), $add(rhs))
+            }
+        }
     };
 }
 
@@ -2745,6 +2782,72 @@ impl std::ops::Div<Tensor> for f64 {
 }
 
 impl std::ops::Div<&Tensor> for f64 {
+    type Output = Result<Tensor>;
+
+    #[allow(clippy::suspicious_arithmetic_impl)]
+    fn div(self, rhs: &Tensor) -> Self::Output {
+        rhs.recip()? * self
+    }
+}
+
+impl std::ops::Add<Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    fn add(self, rhs: Tensor) -> Self::Output {
+        rhs + self
+    }
+}
+
+impl std::ops::Add<&Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    fn add(self, rhs: &Tensor) -> Self::Output {
+        rhs + self
+    }
+}
+
+impl std::ops::Mul<Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    fn mul(self, rhs: Tensor) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl std::ops::Mul<&Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    fn mul(self, rhs: &Tensor) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl std::ops::Sub<Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    fn sub(self, rhs: Tensor) -> Self::Output {
+        rhs.affine_f32(-1., self)
+    }
+}
+
+impl std::ops::Sub<&Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    fn sub(self, rhs: &Tensor) -> Self::Output {
+        rhs.affine_f32(-1., self)
+    }
+}
+
+impl std::ops::Div<Tensor> for f32 {
+    type Output = Result<Tensor>;
+
+    #[allow(clippy::suspicious_arithmetic_impl)]
+    fn div(self, rhs: Tensor) -> Self::Output {
+        rhs.recip()? * self
+    }
+}
+
+impl std::ops::Div<&Tensor> for f32 {
     type Output = Result<Tensor>;
 
     #[allow(clippy::suspicious_arithmetic_impl)]

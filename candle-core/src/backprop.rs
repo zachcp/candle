@@ -130,6 +130,7 @@ impl Tensor {
                     | Op::Unary(node, _)
                     | Op::Elu(node, _)
                     | Op::Powf(node, _)
+                    | Op::Powf32(node, _)
                     | Op::CustomOp1(node, _) => {
                         let (tg, nodes) = walk(node, nodes, already_seen);
                         track_grad |= tg;
@@ -641,6 +642,11 @@ impl Tensor {
                     }
                     Op::Powf(arg, e) => {
                         let arg_grad = (&(grad * arg.powf(e - 1.)?)? * *e)?;
+                        let sum_grad = grads.or_insert(arg)?;
+                        *sum_grad = sum_grad.add(&arg_grad)?
+                    }
+                    Op::Powf32(arg, e) => {
+                        let arg_grad = (&(grad * arg.powf32(e - 1.)?)? * *e)?;
                         let sum_grad = grads.or_insert(arg)?;
                         *sum_grad = sum_grad.add(&arg_grad)?
                     }

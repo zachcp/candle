@@ -153,6 +153,11 @@ pub enum Op {
         mul: f64,
         add: f64,
     },
+    AffineF32 {
+        arg: Tensor,
+        mul: f32,
+        add: f32,
+    },
     ToDType(Tensor),
     Copy(Tensor),
     Broadcast(Tensor),

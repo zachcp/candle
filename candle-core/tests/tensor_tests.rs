@@ -1684,6 +1684,18 @@ fn pow() -> Result<()> {
 }
 
 #[test]
+fn powf32() -> Result<()> {
+    let lhs = Tensor::new(&[[1f32, 2., 3.], [4., 5., 6.]], &Device::Cpu)?;
+    let rhs = (&lhs - 2.)?;
+    let res = lhs.pow(2.f32)?;
+    assert_eq!(
+        test_utils::to_vec2_round(&res, 3)?,
+        [[1.0, 1.0, 3.0], [16.0, 125.0, 1296.0]]
+    );
+    Ok(())
+}
+
+#[test]
 fn test_flip_1d() -> Result<()> {
     // 1D: [0, 1, 2, 3, 4]
     let t = Tensor::arange(0.0, 5.0, &Device::Cpu)?.reshape((5,))?;
