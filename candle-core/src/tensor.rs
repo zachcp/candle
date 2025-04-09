@@ -2721,6 +2721,7 @@ macro_rules! bin_trait {
 
 bin_trait!(Add, add, |_| 1., |v| v);
 bin_trait!(Sub, sub, |_| 1., |v: f64| -v);
+// bin_trait!(Sub, sub, |_| 1., |v| -v);
 bin_trait!(Mul, mul, |v| v, |_| 0.);
 bin_trait!(Div, div, |v| 1. / v, |_| 0.);
 
