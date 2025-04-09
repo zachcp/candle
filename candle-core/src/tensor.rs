@@ -742,6 +742,16 @@ impl Tensor {
         Ok(from_storage(storage, self.shape(), op, false))
     }
 
+    /// Raise the tensor to some float exponent `e`.
+    pub fn powf32(&self, e: f32) -> Result<Self> {
+        if self.elem_count() == 0 {
+            return Ok(self.clone());
+        }
+        let storage = self.storage().powf(self.layout(), e)?;
+        let op = BackpropOp::new1(self, |t| Op::Powf32(t, e));
+        Ok(from_storage(storage, self.shape(), op, false))
+    }
+
     pub(crate) fn check_dim(&self, dim: usize, op: &'static str) -> Result<()> {
         if dim >= self.dims().len() {
             Err(Error::DimOutOfRange {

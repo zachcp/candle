@@ -164,6 +164,7 @@ pub enum Op {
     Permute(Tensor, Vec<usize>),
     Elu(Tensor, f64),
     Powf(Tensor, f64),
+    Powf32(Tensor, f32),
     CustomOp1(
         Tensor,
         std::sync::Arc<Box<dyn crate::CustomOp1 + Send + Sync>>,
